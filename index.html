@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyber World</title>
+
+<style>
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        min-height: 100vh;
+        background: #000;
+        color: #fff;
+        font-family: "Courier New", monospace;
+        overflow-x: hidden;
+    }
+
+    /* =========================
+       3D CYBER GRID
+       ========================= */
+
+    .grid {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        grid-template-rows: repeat(8, 1fr);
+        z-index: 0;
+        perspective: 700px;
+    }
+
+    .square {
+        border: 1px solid rgba(40, 40, 50, 0.65);
+        background: linear-gradient(
+            135deg,
+            rgba(25, 25, 30, 0.55),
+            rgba(5, 5, 8, 0.85)
+        );
+        box-shadow:
+            inset 0 0 15px rgba(255,255,255,0.015),
+            0 0 8px rgba(0,0,0,0.8);
+        transform: translateZ(0);
+    }
+
+    /* =========================
+       BLUE STREAK
+       ========================= */
+
+    .streak {
+        position: fixed;
+        width: 170px;
+        height: 3px;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            #168cff,
+            #7ac7ff,
+            #168cff,
+            transparent
+        );
+        box-shadow:
+            0 0 8px #168cff,
+            0 0 20px #168cff,
+            0 0 35px rgba(22,140,255,0.8);
+        opacity: 0;
+        z-index: 2;
+        pointer-events: none;
+        transform-origin: center;
+    }
+
+    .streak.active {
+        animation: fly 1s linear forwards;
+    }
+
+    @keyframes fly {
+        0% {
+            opacity: 0;
+            transform: translate(0,0) rotate(var(--angle));
+        }
+
+        15% {
+            opacity: 1;
+        }
+
+        80% {
+            opacity: 1;
+        }
+
+        100% {
+            opacity: 0;
+            transform:
+                translate(var(--moveX), var(--moveY))
+                rotate(var(--angle));
+        }
+    }
+
+    /* =========================
+       MAIN CONTENT
+       ========================= */
+
+    .content {
+        position: relative;
+        z-index: 5;
+        min-height: 100vh;
+        padding: 70px 20px;
+        text-align: center;
+    }
+
+    .title {
+        font-size: clamp(40px, 8vw, 82px);
+        letter-spacing: 8px;
+        color: #fff;
+        text-shadow:
+            0 0 8px rgba(255,255,255,0.4),
+            0 0 25px rgba(0,120,255,0.25);
+        margin-bottom: 10px;
+    }
+
+    .subtitle {
+        color: #168cff;
+        letter-spacing: 4px;
+        font-size: 14px;
+        margin-bottom: 55px;
+    }
+
+    /* =========================
+       CYBER BUTTONS
+       ========================= */
+
+    .buttons {
+        max-width: 700px;
+        margin: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .cyber-button {
+        position: relative;
+        padding: 18px 25px;
+        background: rgba(5,5,8,0.88);
+        color: #d9eaff;
+        border: 1px solid #26384d;
+        font-family: "Courier New", monospace;
+        font-size: 16px;
+        letter-spacing: 2px;
+        cursor: pointer;
+        transition:
+            0.25s ease,
+            box-shadow 0.25s ease,
+            transform 0.25s ease;
+        overflow: hidden;
+    }
+
+    .cyber-button::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 4px;
+        height: 100%;
+        background: #168cff;
+        opacity: 0.45;
+        transition: 0.25s;
+    }
+
+    .cyber-button:hover {
+        color: #fff;
+        border-color: #168cff;
+        background: rgba(8,25,45,0.9);
+        box-shadow:
+            0 0 8px rgba(22,140,255,0.8),
+            0 0 25px rgba(22,140,255,0.35),
+            inset 0 0 15px rgba(22,140,255,0.12);
+        transform: translateY(-2px);
+    }
+
+    .cyber-button:hover::before {
+        opacity: 1;
+        box-shadow: 0 0 15px #168cff;
+    }
+
+    /* =========================
+       INFO PANEL
+       ========================= */
+
+    .panel {
+        max-width: 800px;
+        margin: 35px auto 0;
+        padding: 30px;
+        background: rgba(2, 5, 10, 0.94);
+        border: 1px solid #168cff;
+        box-shadow:
+            0 0 20px rgba(22,140,255,0.25),
+            inset 0 0 20px rgba(22,140,255,0.05);
+        display: none;
+        text-align: left;
+        animation: panelIn 0.3s ease;
+    }
+
+    .panel.show {
+        display: block;
+    }
+
+    @keyframes panelIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .panel h2 {
+        color: #168cff;
+        margin-bottom: 18px;
+        letter-spacing: 2px;
+    }
+
+    .panel p {
+        color: #cbd5e1;
+        line-height: 1.8;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+    }
+
+    .close {
+        margin-top: 20px;
+        color: #168cff;
+        cursor: pointer;
+        font-family: "Courier New", monospace;
+        font-size: 13px;
+    }
+
+    .close:hover {
+        color: #fff;
+        text-shadow: 0 0 10px #168cff;
+    }
+
+    .footer {
+        margin-top: 70px;
+        color: #3e4b5a;
+        font-size: 12px;
+        letter-spacing: 2px;
+    }
+
+    @media (max-width: 600px) {
+        .grid {
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(12, 1fr);
+        }
+
+        .content {
+            padding-top: 50px;
+        }
+
+        .title {
+            letter-spacing: 4px;
+        }
+
+        .panel {
+            padding: 20px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<!-- CYBER GRID -->
+<div class="grid" id="grid"></div>
+
+<!-- FLYING BLUE LINE -->
+<div class="streak" id="streak"></div>
+
+<!-- MAIN WEBSITE -->
+<main class="content">
+
+    <h1 class="title">CYBER WORLD</h1>
+
+    <p class="subtitle">
+        SCRIPTS • CODE • CYBERSECURITY
+    </p>
+
+    <div class="buttons">
+
+        <button class="cyber-button" onclick="showInfo('hacking')">
+            &gt; WHAT MEANS HACKING?
+        </button>
+
+        <button class="cyber-button" onclick="showInfo('scripting')">
+            &gt; WHAT IS SCRIPTING?
+        </button>
+
+        <button class="cyber-button" onclick="showInfo('security')">
+            &gt; CYBERSECURITY
+        </button>
+
+        <button class="cyber-button" onclick="showInfo('types')">
+            &gt; HACKER TYPES
+        </button>
+
+        <button class="cyber-button" onclick="showInfo('facts')">
+            &gt; COOL CYBER FACTS
+        </button>
+
+    </div>
+
+    <div class="panel" id="panel">
+        <h2 id="panelTitle"></h2>
+        <p id="panelText"></p>
+
+        <div class="close" onclick="closePanel()">
+            [ CLOSE PANEL ]
+        </div>
+    </div>
+
+    <div class="footer">
+        SYSTEM ONLINE // CYBER WORLD
+    </div>
+
+</main>
+
+<script>
+
+    /* =========================
+       CREATE GRID
+       ========================= */
+
+    const grid = document.getElementById("grid");
+
+    for (let i = 0; i < 96; i++) {
+        const square = document.createElement("div");
+        square.className = "square";
+        grid.appendChild(square);
+    }
+
+
+    /* =========================
+       INFORMATION
+       ========================= */
+
+    const information = {
+
+        hacking: {
+            title: "WHAT MEANS HACKING?",
+            text:
+            "Hacking is a broad term for exploring, understanding, or modifying computer systems using technical knowledge. Hacking itself is not automatically harmful. Ethical hackers work with permission to help discover weaknesses and improve security. Unauthorized access, however, can be illegal and harmful."
+        },
+
+        scripting: {
+            title: "WHAT IS SCRIPTING?",
+            text:
+            "Scripting means writing small programs called scripts that tell a computer to perform tasks automatically. Scripts are used in many areas of technology, including programming, websites, automation, and system administration."
+        },
+
+        security: {
+            title: "CYBERSECURITY",
+            text:
+            "Cybersecurity is the practice of protecting computers, networks, accounts, and information from unauthorized access and other digital threats. It includes areas such as safe passwords, software updates, privacy, monitoring, and security testing."
+        },
+
+        types: {
+            title: "HACKER TYPES",
+            text:
+            "People sometimes use different labels for hackers depending on their goals. Ethical hackers work with permission to improve security. Security researchers study technology and vulnerabilities. Criminal hackers attempt to access systems without permission or use technology to cause harm."
+        },
+
+        facts: {
+            title: "COOL CYBER FACTS",
+            text:
+            "Computers can automate enormous numbers of tasks in very little time. Scripts can help people repeat routine work automatically. Cybersecurity teams use logs, monitoring systems, testing, and analysis to detect suspicious activity. Modern security is a huge field involving programming, networks, mathematics, hardware, and human behavior."
+        }
+
+    };
+
+
+    /* =========================
+       SHOW INFO
+       ========================= */
+
+    function showInfo(type) {
+
+        const panel = document.getElementById("panel");
+        const title = document.getElementById("panelTitle");
+        const text = document.getElementById("panelText");
+
+        title.textContent = information[type].title;
+        text.textContent = information[type].text;
+
+        panel.classList.add("show");
+
+        panel.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
+    }
+
+
+    function closePanel() {
+        document.getElementById("panel").classList.remove("show");
+    }
+
+
+    /* =========================
+       RANDOM BLUE STREAK
+       ========================= */
+
+    const streak = document.getElementById("streak");
+
+    function createStreak() {
+
+        streak.classList.remove("active");
+
+        void streak.offsetWidth;
+
+        const side = Math.floor(Math.random() * 4);
+
+        let x;
+        let y;
+        let moveX;
+        let moveY;
+        let angle;
+
+        if (side === 0) {
+            // left → right
+            x = -180;
+            y = Math.random() * window.innerHeight;
+            moveX = window.innerWidth + 400;
+            moveY = (Math.random() - 0.5) * 250;
+            angle = Math.random() * 20 - 10;
+        }
+
+        else if (side === 1) {
+            // right → left
+            x = window.innerWidth + 180;
+            y = Math.random() * window.innerHeight;
+            moveX = -(window.innerWidth + 400);
+            moveY = (Math.random() - 0.5) * 250;
+            angle = 180 + (Math.random() * 20 - 10);
+        }
+
+        else if (side === 2) {
+            // top → bottom
+            x = Math.random() * window.innerWidth;
+            y = -180;
+            moveX = (Math.random() - 0.5) * 250;
+            moveY = window.innerHeight + 400;
+            angle = 90 + (Math.random() * 20 - 10);
+        }
+
+        else {
+            // bottom → top
+            x = Math.random() * window.innerWidth;
+            y = window.innerHeight + 180;
+            moveX = (Math.random() - 0.5) * 250;
+            moveY = -(window.innerHeight + 400);
+            angle = -90 + (Math.random() * 20 - 10);
+        }
+
+        streak.style.left = x + "px";
+        streak.style.top = y + "px";
+        streak.style.setProperty("--moveX", moveX + "px");
+        streak.style.setProperty("--moveY", moveY + "px");
+        streak.style.setProperty("--angle", angle + "deg");
+
+        streak.classList.add("active");
+    }
+
+
+    /* First streak after 3 seconds */
+    setTimeout(createStreak, 3000);
+
+    /* Then another one every 4 seconds */
+    setInterval(createStreak, 4000);
+
+</script>
+
+</body>
+</html>
